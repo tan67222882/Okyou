@@ -38,8 +38,8 @@ def parse_info(title: str, idx: int):
     used_slugs.add(slug)
 
     if ch_num is not None and ch_num >= 1:
-        b_start = ((ch_num - 1) // 20) * 20 + 1
-        bundle_name = f"{b_start}-{b_start + 19}"
+        b_start = ((ch_num - 1) // 10) * 10 + 1
+        bundle_name = f"{b_start}-{b_start + 9}"
     else:
         bundle_name = "extras"
 
@@ -146,7 +146,7 @@ index_html = f"""<!DOCTYPE html>
   <h1>Necromancer Academy and the Genius Summoner ({len(items)} Chapters)</h1>
   <input type="text" id="q" placeholder="Gõ số chương cần tìm (ví dụ: 623)..." oninput="filterList()">
   <ul id="list">{"".join(toc_items)}</ul>
-  <h3>Tất cả các cụm 20 chương:</h3>
+  <h3>Tất cả các cụm 10 chương:</h3>
   <div class="chips">{"".join(bundle_links)}</div>
   <script>
     function filterList() {{
