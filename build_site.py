@@ -16,6 +16,7 @@ start = raw_html.find("[", raw_html.find("/*_DATA_START_*/"))
 chapters, _ = json.JSONDecoder().raw_decode(raw_html, start)
 
 used_slugs = set()
+BUNDLE_SIZE = 5
 
 
 def parse_info(title: str, idx: int):
@@ -38,8 +39,8 @@ def parse_info(title: str, idx: int):
     used_slugs.add(slug)
 
     if ch_num is not None and ch_num >= 1:
-        b_start = ((ch_num - 1) // 10) * 10 + 1
-        bundle_name = f"{b_start}-{b_start + 9}"
+        b_start = ((ch_num - 1) // BUNDLE_SIZE) * BUNDLE_SIZE + 1
+        bundle_name = f"{b_start}-{b_start + BUNDLE_SIZE - 1}"
     else:
         bundle_name = "extras"
 
@@ -97,9 +98,14 @@ for i, item in enumerate(items):
         f'<a class="btag" href="bundles/{item["bundle_file"]}">[Cụm {item["bundle"]}]</a></li>'
     )
 
+bundle_keys = list(bundles_map.keys())
 bundle_links = []
-for b_name, chunk in bundles_map.items():
+for b_i, b_name in enumerate(bundle_keys):
+    chunk = bundles_map[b_name]
     b_file = f"{b_name}.html"
+    prev_b = f'<a href="{bundle_keys[b_i-1]}.html">&larr; Cụm trước</a>' if b_i > 0 else ""
+    next_b = f'<a href="{bundle_keys[b_i+1]}.html">Cụm sau &rarr;</a>' if b_i < len(bundle_keys) - 1 else ""
+
     sections = [
         f"<section><h2>{html.escape(ch['title'])}</h2><article>{html.escape(ch['content'])}</article></section>"
         for ch in chunk
@@ -112,14 +118,16 @@ for b_name, chunk in bundles_map.items():
   <title>NAGS Cụm {html.escape(b_name)}</title>
   <style>
     body {{ font-family: system-ui, sans-serif; max-width: 780px; margin: 40px auto; padding: 0 16px; line-height: 1.7; background: #18181b; color: #e4e4e7; }}
+    nav {{ display: flex; flex-wrap: wrap; gap: 12px; justify-content: space-between; margin: 20px 0; padding: 12px 0; border-top: 1px solid #3f3f46; border-bottom: 1px solid #3f3f46; }}
     section {{ margin-bottom: 48px; padding-bottom: 32px; border-bottom: 2px solid #3f3f46; }}
     article {{ white-space: pre-wrap; font-size: 17px; }}
     a {{ color: #60a5fa; text-decoration: none; }}
   </style>
 </head>
 <body>
-  <p><a href="../index.html">&larr; Về Mục lục</a></p>
+  <nav><a href="../index.html">Mục lục</a> {prev_b} {next_b}</nav>
   {"".join(sections)}
+  <nav><a href="../index.html">Mục lục</a> {prev_b} {next_b}</nav>
 </body>
 </html>"""
     with open(os.path.join(BUNDLE_DIR, b_file), "w", encoding="utf-8") as f:
@@ -146,7 +154,7 @@ index_html = f"""<!DOCTYPE html>
   <h1>Necromancer Academy and the Genius Summoner ({len(items)} Chapters)</h1>
   <input type="text" id="q" placeholder="Gõ số chương cần tìm (ví dụ: 623)..." oninput="filterList()">
   <ul id="list">{"".join(toc_items)}</ul>
-  <h3>Tất cả các cụm 10 chương:</h3>
+  <h3>Tất cả các cụm 5 chương:</h3>
   <div class="chips">{"".join(bundle_links)}</div>
   <script>
     function filterList() {{
